@@ -1,33 +1,61 @@
-import { StyleSheet, Text, TextInput, View } from "react-native";
-import { useForm, Controller } from "react-hook-form";
-import { signUpSchema, SignUpSchema } from "./sign-in.schema";
-import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@/components/ui/button";
-import { Label } from "@react-navigation/elements";
-import { layoutTheme } from "@/constant/theme";
 import SosialButton from "@/components/ui/sosial-button";
-import { Link } from "expo-router";
+import { layoutTheme } from "@/constant/theme";
+import { useAuthStore } from "@/store/auth.store";
+import { zodResolver } from "@hookform/resolvers/zod";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Label } from "@react-navigation/elements";
+import { Link, useRouter } from "expo-router";
+import { Controller, useForm } from "react-hook-form";
+import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
+import { SignInSchema, signInSchema } from "./sign-in.schema";
+
 
 export default function SignInForm() {
+  const router = useRouter();
+  const { setUser, setIsAuthenticated } = useAuthStore();
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignUpSchema>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+  } = useForm<SignInSchema>({
+    resolver: zodResolver(signInSchema),
   });
 
-  const onSubmit = (data: SignUpSchema) => {
-    console.log(data);
+  const onSubmit = async (data: SignInSchema) => {
+    try {
+      const user = await AsyncStorage.getItem("user");
+
+      if (!user) {
+        Alert.alert("Error", "No user found. Please sign up first.");
+        return;
+      }
+
+      const userData = JSON.parse(user);
+
+      if (
+        userData.email === data.email &&
+        userData.password === data.password
+      ) {
+        setUser(userData);
+        await AsyncStorage.setItem("isAuthenticated", "true");
+        setIsAuthenticated(true);
+        console.log("User logged in", userData);
+        router.replace("/");
+      } else {
+        Alert.alert("Error", "Invalid email or password");
+      }
+    } catch (error) {
+      console.error("Sign in error:", error);
+      Alert.alert(
+        "Error",
+        "An error occurred during sign in. Please try again."
+      );
+    }
   };
 
   return (
     <View style={styles.container}>
-
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
@@ -35,8 +63,6 @@ export default function SignInForm() {
           <View style={styles.underline} />
         </View>
       </View>
-
-      
 
       <View style={styles.formGroup}>
         <Label style={styles.label}>EMAIL OR PHONE</Label>
@@ -84,19 +110,19 @@ export default function SignInForm() {
 
       {/* BUTTONS */}
       <View style={styles.buttonsContainer}>
+        <Button title="Sign In" onPress={handleSubmit(onSubmit)} />
 
-      <Button title="Sign In" onPress={handleSubmit(onSubmit)} />
-      <Text style={styles.orText}>OR</Text>
-      <SosialButton
-        icon={require("../../../assets/images/icons/google-icon.png")}
-        title="Sign Up with Google"
-        onPress={() => {}}
-      />
-      <SosialButton
-        icon={require("../../../assets/images/icons/facebook-icon.png")}
-        title="Sign Up with Google"
-        onPress={() => {}}
-      />
+        <Text style={styles.orText}>OR</Text>
+        <SosialButton
+          icon={require("../../../assets/images/icons/google-icon.png")}
+          title="Sign Up with Google"
+          onPress={() => {}}
+        />
+        <SosialButton
+          icon={require("../../../assets/images/icons/facebook-icon.png")}
+          title="Sign Up with Google"
+          onPress={() => {}}
+        />
       </View>
 
       <View style={styles.linkContainer}>
@@ -155,7 +181,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 5,
   },
-  buttonsContainer:{
+  buttonsContainer: {
     marginVertical: 24,
     gap: 10,
   },

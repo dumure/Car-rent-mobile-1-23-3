@@ -1,14 +1,19 @@
-import { StyleSheet, Text, TextInput, View } from "react-native";
-import { useForm, Controller } from "react-hook-form";
-import { signUpSchema, SignUpSchema } from "./sign-up.schema";
-import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@/components/ui/button";
-import { Label } from "@react-navigation/elements";
-import { layoutTheme } from "@/constant/theme";
 import SosialButton from "@/components/ui/sosial-button";
-import { Link } from "expo-router";
+import { layoutTheme } from "@/constant/theme";
+import { useAuthStore } from "@/store/auth.store";
+import { zodResolver } from "@hookform/resolvers/zod";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Label } from "@react-navigation/elements";
+import { Link, useRouter } from "expo-router";
+import { Controller, useForm } from "react-hook-form";
+import { StyleSheet, Text, TextInput, View } from "react-native";
+import UUID from "react-native-uuid";
+import { signUpSchema, SignUpSchema } from "./sign-up.schema";
 
 export default function SignUpForm() {
+  const router = useRouter();
+
   const {
     control,
     handleSubmit,
@@ -21,13 +26,26 @@ export default function SignUpForm() {
     },
   });
 
-  const onSubmit = (data: SignUpSchema) => {
-    console.log(data);
+  const onSubmit = async (data: SignUpSchema) => {
+    const userData = {
+      id: UUID.v4() as string,
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      isAuthenticated: false,
+    };
+    console.log(userData);
+
+    try {
+      await AsyncStorage.setItem("user", JSON.stringify(userData));
+      router.replace("/sign-in/page");
+    } catch (e) {
+      console.log("Error saving user", e);
+    }
   };
 
   return (
     <View style={styles.container}>
-
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
@@ -104,19 +122,18 @@ export default function SignUpForm() {
 
       {/* BUTTONS */}
       <View style={styles.buttonsContainer}>
-
-      <Button title="Sign Up" onPress={handleSubmit(onSubmit)} />
-      <Text style={styles.orText}>OR</Text>
-      <SosialButton
-        icon={require("../../../assets/images/icons/google-icon.png")}
-        title="Sign Up with Google"
-        onPress={() => {}}
-      />
-      <SosialButton
-        icon={require("../../../assets/images/icons/facebook-icon.png")}
-        title="Sign Up with Google"
-        onPress={() => {}}
-      />
+        <Button title="Sign Up" onPress={handleSubmit(onSubmit)} />
+        <Text style={styles.orText}>OR</Text>
+        <SosialButton
+          icon={require("../../../assets/images/icons/google-icon.png")}
+          title="Sign Up with Google"
+          onPress={() => {}}
+        />
+        <SosialButton
+          icon={require("../../../assets/images/icons/facebook-icon.png")}
+          title="Sign Up with Google"
+          onPress={() => {}}
+        />
       </View>
 
       <View style={styles.linkContainer}>
@@ -175,7 +192,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 5,
   },
-  buttonsContainer:{
+  buttonsContainer: {
     marginVertical: 24,
     gap: 10,
   },

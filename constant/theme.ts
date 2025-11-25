@@ -36,6 +36,8 @@ export const layoutTheme = {
       background: {
         primary: "#FFFFFF",
         secondary: "#F5F5F5",
+        black: "#000000",
+        white: "#FFFFFF",
         soft: "#F0ECEC", // using pastel tone (#988080 → soft tint)
         dark: "#1A1A1A",
         light: "#FFFFFF",

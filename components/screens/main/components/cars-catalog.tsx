@@ -66,6 +66,7 @@ const getStyles = (colorScheme: "light" | "dark") =>
       fontWeight: "500",
     },
     listContent: {
+      gap: 20,
       paddingBottom: 20,
       paddingHorizontal: 12,
     },
