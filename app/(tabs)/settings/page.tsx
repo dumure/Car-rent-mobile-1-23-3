@@ -4,11 +4,12 @@ import { ThemeType } from "@/types/theme-types";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -37,6 +38,7 @@ const SettingsItem = ({ label, onPress, styles }: SettingsItemProps) => (
 
 export default function SettingsPage() {
   const { colorScheme } = useTheme();
+  const { toggleTheme } = useTheme();
   const router = useRouter();
   const styles = getStyles(colorScheme);
 
@@ -46,17 +48,17 @@ export default function SettingsPage() {
     { label: "Set Password", onPress: () => {} },
     { label: "Location", onPress: () => {} },
     { label: "Account", onPress: () => {} },
-    { label: "Driver License", onPress: () => router.push("/settings/driver-license/page") },
+    {
+      label: "Driver License",
+      onPress: () => router.push("/settings/driver-license/page"),
+    },
   ];
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header */}
       <View style={styles.header}>
-        <Pressable
-          style={styles.headerButton}
-          onPress={() => router.back()}
-        >
+        <Pressable style={styles.headerButton} onPress={() => router.back()}>
           <Ionicons
             name="arrow-back"
             size={24}
@@ -81,6 +83,17 @@ export default function SettingsPage() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.settingsItem}>
+          <Text style={styles.settingsItemText}>Dark Mode</Text>
+          <Switch
+            value={colorScheme === "dark"}
+            onValueChange={() =>
+              toggleTheme(colorScheme === "dark" ? "light" : "dark")
+            }
+            trackColor={{ false: layoutTheme.colors.background.gray, true: layoutTheme.colors.secondary[500] }}
+            thumbColor={layoutTheme.colors.background.white}
+          />
+        </View>
         {settingsItems.map((item, index) => (
           <SettingsItem
             key={index}
@@ -99,9 +112,7 @@ const getStyles = (theme: ThemeType) =>
     container: {
       flex: 1,
       backgroundColor:
-        theme === "dark"
-          ? layoutTheme.colors.background.dark
-          : "#F5F6F8",
+        theme === "dark" ? layoutTheme.colors.background.dark : "#F5F6F8",
     },
     header: {
       flexDirection: "row",
@@ -145,9 +156,7 @@ const getStyles = (theme: ThemeType) =>
       borderRadius: 12,
       borderWidth: 1,
       borderColor:
-        theme === "dark"
-          ? layoutTheme.colors.secondary[500]
-          : "#E8EAED",
+        theme === "dark" ? layoutTheme.colors.secondary[500] : "#E8EAED",
       shadowColor: "#000",
       shadowOffset: {
         width: 0,
@@ -160,9 +169,7 @@ const getStyles = (theme: ThemeType) =>
     settingsItemPressed: {
       opacity: 0.7,
       backgroundColor:
-        theme === "dark"
-          ? layoutTheme.colors.secondary[500]
-          : "#F0F1F3",
+        theme === "dark" ? layoutTheme.colors.secondary[500] : "#F0F1F3",
     },
     settingsItemText: {
       fontSize: 16,

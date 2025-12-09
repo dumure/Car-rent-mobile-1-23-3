@@ -1,3 +1,4 @@
+import { useTheme } from "@/hooks/use-theme";
 import { CarCategoryEnum, CarType } from "@/types/car-types";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -9,7 +10,7 @@ interface CarCardProps {
   car: CarType;
 }
 
-const getCategoryBackground = (categories: string[]): string => {
+const getCategoryBackgroundLight = (categories: string[]): string => {
   if (categories.includes(CarCategoryEnum.LUXURY)) {
     return "#F5F5F5"; // Light gray for luxury
   }
@@ -22,9 +23,24 @@ const getCategoryBackground = (categories: string[]): string => {
   return "#F5F5F5"; // Default light gray
 };
 
+const getCategoryBackgroundDark = (categories: string[]): string => {
+  if (categories.includes(CarCategoryEnum.LUXURY)) {
+    return "#363229"; // Dark gray for luxury
+  }
+  if (categories.includes(CarCategoryEnum.FAMILY)) {
+    return "#20242e"; // Dark gray for family
+  }
+  if (categories.includes(CarCategoryEnum.CHEAP)) {
+    return "#293629"; // Dark gray for cheap
+  }
+  return "#2D3748"; // Default dark gray
+};
+
 export default function CarCard({ car }: CarCardProps) {
+  const { colorScheme } = useTheme();
   const [isFavorite, setIsFavorite] = useState(false);
-  const backgroundColor = getCategoryBackground(car.categories);
+  const backgroundColor = colorScheme === "dark" ? getCategoryBackgroundDark(car.categories) : getCategoryBackgroundLight(car.categories);
+
 
   return (
     <Link href={`/cars/${car.id}/page`}>
