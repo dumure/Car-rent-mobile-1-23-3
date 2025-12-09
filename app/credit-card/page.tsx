@@ -9,7 +9,7 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableWithoutFeedback, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { creditCardSchema, CreditCardSchema } from "./credit-card.schema";
 
@@ -69,125 +69,135 @@ export default function CreditCardPage() {
           color={layoutTheme.colors.text.primary}
         />
       </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <View style={{ flex: 1 }}>
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+              <View style={styles.content}>
+                {selectedPayment === "visa" ||
+                  (selectedPayment === "mastercard" && (
+                    <View style={styles.creditCardSection}>
+                      {/* Credit Card Visual */}
+                      <View style={styles.creditCardVisual}>
+                        <Image
+                          source={require("../../assets/images/credit-card.png")}
+                          style={styles.creditCardImage}
+                        />
+                      </View>
 
-      <View style={styles.content}>
-        {selectedPayment === "visa" ||
-          (selectedPayment === "mastercard" && (
-            <View style={styles.creditCardSection}>
-              {/* Credit Card Visual */}
-              <View style={styles.creditCardVisual}>
-                <Image
-                  source={require("../../assets/images/credit-card.png")}
-                  style={styles.creditCardImage}
-                />
-              </View>
+                      {/* Form Fields */}
+                      <View style={styles.formSection}>
+                        <View style={styles.inputContainer}>
+                          <View style={styles.formRow}>
+                            <Text style={styles.formLabel}>Card Number:</Text>
+                            <TextInput
+                              style={styles.formInput}
+                              {...register("cardNumber")}
+                              keyboardType="numeric"
+                              placeholder="0000 0000 0000 0000"
+                              maxLength={19}
+                              onChangeText={formatCardNumber}
+                              value={cardNumber}
+                            />
+                          </View>
+                          {errors.cardNumber && (
+                            <Text style={styles.errorText}>
+                              {errors.cardNumber.message}
+                            </Text>
+                          )}
+                        </View>
 
-              {/* Form Fields */}
-              <View style={styles.formSection}>
-                <View style={styles.inputContainer}>
-                  <View style={styles.formRow}>
-                    <Text style={styles.formLabel}>Card Number:</Text>
-                    <TextInput
-                      style={styles.formInput}
-                      {...register("cardNumber")}
-                      keyboardType="numeric"
-                      placeholder="0000 0000 0000 0000"
-                      maxLength={19}
-                      onChangeText={formatCardNumber}
-                      value={cardNumber}
-                    />
-                  </View>
-                  {errors.cardNumber && (
-                    <Text style={styles.errorText}>
-                      {errors.cardNumber.message}
-                    </Text>
-                  )}
-                </View>
+                        <View style={styles.inputContainer}>
+                          <View style={styles.formRow}>
+                            <Text style={styles.formLabel}>Expiration Date:</Text>
+                            <View style={styles.formDateRow}>
+                              <TextInput
+                                style={styles.dateInput}
+                                keyboardType="numeric"
+                                maxLength={2}
+                                placeholder="MM"
+                                value={month}
+                                onChangeText={(text) => {
+                                  const digits = text.replace(/\D/g, "");
+                                  setValue("expirationDate.month", digits, {
+                                    shouldValidate: true,
+                                  });
+                                }}
+                              />
+                              <Text style={styles.dateSeparator}>/</Text>
+                              <TextInput
+                                style={styles.dateInput}
+                                keyboardType="numeric"
+                                maxLength={2}
+                                placeholder="YY"
+                                value={year}
+                                onChangeText={(text) => {
+                                  const digits = text.replace(/\D/g, "");
+                                  setValue("expirationDate.year", digits, {
+                                    shouldValidate: true,
+                                  });
+                                }}
+                              />
+                            </View>
+                          </View>
+                          {errors.expirationDate && (
+                            <Text style={styles.errorText}>
+                              {errors.expirationDate.message ||
+                                errors.expirationDate.root?.message}
+                            </Text>
+                          )}
+                        </View>
 
-                <View style={styles.inputContainer}>
-                  <View style={styles.formRow}>
-                    <Text style={styles.formLabel}>Expiration Date:</Text>
-                    <View style={styles.formDateRow}>
-                      <TextInput
-                        style={styles.dateInput}
-                        keyboardType="numeric"
-                        maxLength={2}
-                        placeholder="MM"
-                        value={month}
-                        onChangeText={(text) => {
-                          const digits = text.replace(/\D/g, "");
-                          setValue("expirationDate.month", digits, {
-                            shouldValidate: true,
-                          });
-                        }}
-                      />
-                      <Text style={styles.dateSeparator}>/</Text>
-                      <TextInput
-                        style={styles.dateInput}
-                        keyboardType="numeric"
-                        maxLength={2}
-                        placeholder="YY"
-                        value={year}
-                        onChangeText={(text) => {
-                          const digits = text.replace(/\D/g, "");
-                          setValue("expirationDate.year", digits, {
-                            shouldValidate: true,
-                          });
-                        }}
-                      />
+                        <View style={styles.inputContainer}>
+                          <View style={styles.formRow}>
+                            <Text style={styles.formLabel}>CCV:</Text>
+                            <TextInput
+                              style={styles.formInput}
+                              keyboardType="numeric"
+                              placeholder="123"
+                              maxLength={3}
+                              secureTextEntry
+                              onChangeText={(text) => {
+                                const digits = text.replace(/\D/g, "");
+                                setValue("ccv", digits, {
+                                  shouldValidate: true,
+                                });
+                              }}
+                            />
+                          </View>
+                          {errors.ccv && (
+                            <Text style={styles.errorText}>{errors.ccv.message}</Text>
+                          )}
+                        </View>
+
+                        <View style={styles.formRow}>
+                          <Text style={styles.formLabel}>Rememer This Info:</Text>
+                          <Switch
+                            value={saveCardInfo}
+                            onValueChange={setSaveCardInfo}
+                            trackColor={{ false: "#767577", true: "#4A90A4" }}
+                            thumbColor={saveCardInfo ? "#FFFFFF" : "#f4f3f4"}
+                          />
+                        </View>
+                      </View>
                     </View>
-                  </View>
-                  {errors.expirationDate && (
-                    <Text style={styles.errorText}>
-                      {errors.expirationDate.message ||
-                        errors.expirationDate.root?.message}
-                    </Text>
-                  )}
-                </View>
+                  ))}
 
-                <View style={styles.inputContainer}>
-                  <View style={styles.formRow}>
-                    <Text style={styles.formLabel}>CCV:</Text>
-                    <TextInput
-                      style={styles.formInput}
-                      keyboardType="numeric"
-                      placeholder="123"
-                      maxLength={3}
-                      secureTextEntry
-                      onChangeText={(text) => {
-                        const digits = text.replace(/\D/g, "");
-                        setValue("ccv", digits, {
-                          shouldValidate: true,
-                        });
-                      }}
-                    />
+                {selectedPayment === "paypal" && (
+                  <View style={styles.paypalSection}>
+                    <Text style={styles.paypalTitle}>Paypal</Text>
                   </View>
-                  {errors.ccv && (
-                    <Text style={styles.errorText}>{errors.ccv.message}</Text>
-                  )}
-                </View>
+                )}
 
-                <View style={styles.formRow}>
-                  <Text style={styles.formLabel}>Rememer This Info:</Text>
-                  <Switch
-                    value={saveCardInfo}
-                    onValueChange={setSaveCardInfo}
-                    trackColor={{ false: "#767577", true: "#4A90A4" }}
-                    thumbColor={saveCardInfo ? "#FFFFFF" : "#f4f3f4"}
-                  />
-                </View>
+                <Button title="Confirm Payment" onPress={handleSubmit(onSubmit)} />
               </View>
-            </View>
-          ))}
-
-        {selectedPayment === "paypal" && (
-          <View style={styles.paypalSection}>
-            <Text style={styles.paypalTitle}>Paypal</Text>
+            </ScrollView>
           </View>
-        )}
-
-        <Button title="Confirm Payment" onPress={handleSubmit(onSubmit)} />
-      </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
